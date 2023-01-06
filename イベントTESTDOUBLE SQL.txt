@@ -1,0 +1,218 @@
+import bs4
+import requests
+import re
+import MySQLdb
+import mysql.connector
+import urllib.request
+from collections import Counter
+import datetime
+import time
+
+#接続する
+conn = MySQLdb.connect(
+	user='root',
+	passwd='taro19710316',
+	host='localhost',
+	charset="utf8"
+)
+cursor = conn.cursor()
+sql_str = "SELECT GID,NAME,LINK,DOMAIN,cnt FROM sys.master AS M WHERE (CNT,GID) IN (\
+SELECT MIN(CNT) AS CNT,GID FROM sys.master GROUP BY GID) AND cnt <= 40 order by cnt;"
+cursor.execute(sql_str)
+# 実行結果を取得する
+rows = cursor.fetchall()
+
+for row in rows:
+	time.sleep(2)
+	url_data=[]
+	url = row[2]
+	domain = row[3]
+	if "http://" in url:
+		domain = "http://" + domain + "/"
+	if "https://" in url:
+		domain = "https://" + domain + "/"
+	try:
+		res = requests.get('%s' % url)
+		soup = bs4.BeautifulSoup(res.content, "html.parser")
+		article = soup.find("a", text=re.compile("イベント"))
+		url_data.append(article.get("href"))
+		if "http" in url_data[0]:
+			try:
+				res = requests.get('%s' % url_data[0])
+				soup = bs4.BeautifulSoup(res.content, "html.parser")
+				article = soup.find("a", text=re.compile("イベント"))
+				url_data.append(article.get("href"))
+				if "http" in url_data[1]:
+					tag = 'イベント'
+					gid = row[0]
+					name = row[1]
+					url = row[2]
+					event_url = url_data[1]
+					count = row[4]
+					date = datetime.datetime.today()
+				else:
+					tag = 'イベント'
+					gid = row[0]
+					name = row[1]
+					url = row[2]
+					event_url = domain + url_data[1]
+					count = row[4]
+					date = datetime.datetime.today()
+			except:
+				tag = 'イベント'
+				gid = row[0]
+				name = row[1]
+				url = row[2]
+				event_url = domain + url_data[0]
+				count = row[4]
+				date = datetime.datetime.today()
+		else:
+			try:
+				res = requests.get('%s' % url + url_data[0])
+				soup = bs4.BeautifulSoup(res.content, "html.parser")
+				article = soup.find("a", text=re.compile("イベント"))
+				url_data.append(article.get("href"))
+				if "http" in url_data[1]:
+					tag = 'イベント'
+					gid = row[0]
+					name = row[1]
+					url = row[2]
+					event_url = url_data[1]
+					count = row[4]
+					date = datetime.datetime.today()
+				else:
+					tag = 'イベント'
+					gid = row[0]
+					name = row[1]
+					url = row[2]
+					event_url = domain + url_data[1]
+					count = row[4]
+					date = datetime.datetime.today()
+			except:
+				tag = 'イベント'
+				gid = row[0]
+				name = row[1]
+				url = row[2]
+				event_url = domain + url_data[0]
+				count = row[4]
+				date = datetime.datetime.today()
+		sql_str = "INSERT INTO web.event_links VALUES ('" + tag + "'," + str(gid) +  ",'" + name +"','" + url + "','" + event_url + "'," + str(count) + ",'" + str(date) + "');"
+		cursor.execute(sql_str)
+		print(sql_str)
+		article = soup.find("a", text=re.compile("ｲﾍﾞﾝﾄ"))
+		url_data.append(article.get("href"))
+		if "http" in url_data[0]:
+			try:
+				res = requests.get('%s' % url_data[0])
+				soup = bs4.BeautifulSoup(res.content, "html.parser")
+				article = soup.find("a", text=re.compile("ｲﾍﾞﾝﾄ"))
+				url_data.append(article.get("href"))
+				if "http" in url_data[1]:
+					tag = 'イベント'
+					gid = row[0]
+					name = row[1]
+					url = row[2]
+					event_url =  url_data[1]
+					count = row[4]
+					date = datetime.datetime.today()
+				else:
+					tag = 'イベント'
+					gid = row[0]
+					name = row[1]
+					url = row[2]
+					event_url =  domain + url_data[1]
+					count = row[4]
+					date = datetime.datetime.today()
+			except:
+				tag = 'イベント'
+				gid = row[0]
+				name = row[1]
+				url = row[2]
+				event_url =  url_data[0]
+				count = row[4]
+				date = datetime.datetime.today()
+		else:
+			try:
+				res = requests.get('%s' % url + url_data[0])
+				soup = bs4.BeautifulSoup(res.content, "html.parser")
+				article = soup.find("a", text=re.compile("ｲﾍﾞﾝﾄ"))
+				url_data.append(article.get("href"))
+				tag = 'ｲﾍﾞﾝﾄ'
+				gid = row[0]
+				name = row[1]
+				url = row[2]
+				event_url =  dimain + url_data[1]
+				count = row[4]
+				date = datetime.datetime.today()
+			except:
+				tag = 'ｲﾍﾞﾝﾄ'
+				gid = row[0]
+				name = row[1]
+				url = row[2]
+				event_url =  dimain + url_data[0]
+				count = row[4]
+				date = datetime.datetime.today()
+		sql_str = "INSERT INTO web.event_links VALUES ('" + tag + "'," + str(gid) +  ",'" + name +"','" + url + "','" + event_url + "'," + str(count) + ",'" + str(date) + "');"
+		cursor.execute(sql_str)
+		article = soup.find("a", text=re.compile("EVENT"))
+		url_data.append(article.get("href"))
+		if "http" in url_data[0]:
+			try:
+				res = requests.get('%s' % url_data[0])
+				soup = bs4.BeautifulSoup(res.content, "html.parser")
+				article = soup.find("a", text=re.compile("EVENT"))
+				url_data.append(article.get("href"))
+				if "http" in url_data[1]:
+					tag = 'EVENT'
+					gid = row[0]
+					name = row[1]
+					url = row[2]
+					event_url = url_data[1]
+					count = row[4]
+					date = datetime.datetime.today()
+				else:
+					tag = 'EVENT'
+					gid = row[0]
+					name = row[1]
+					url = row[2]
+					event_url =  dimain + url_data[1]
+					count = row[4]
+					date = datetime.datetime.today()
+			except:
+				tag = 'EVENT'
+				gid = row[0]
+				name = row[1]
+				url = row[2]
+				event_url =  url_data[0]
+				count = row[4]
+				date = datetime.datetime.today()
+		else:
+			try:
+				res = requests.get('%s' % url + url_data[0])
+				soup = bs4.BeautifulSoup(res.content, "html.parser")
+				article = soup.find("a", text=re.compile("EVENT"))
+				url_data.append(article.get("href"))
+				tag = 'EVENT'
+				gid = row[0]
+				name = row[1]
+				url = row[2]
+				event_url =  dimain + url_data[1]
+				count = row[4]
+				date = datetime.datetime.today()
+			except:
+				tag = 'EVENT'
+				gid = row[0]
+				name = row[1]
+				url = row[2]
+				event_url =  dimain + url_data[0]
+				count = row[4]
+				date = datetime.datetime.today()
+		sql_str = "INSERT INTO web.event_links VALUES ('" + tag + "'," + str(gid) +  ",'" + name +"','" + url + "','" + event_url + "'," + str(count) + ",'" + str(date) + "');"
+		cursor.execute(sql_str)
+	except:
+		print(datetime.datetime.today())
+print("END")
+# 接続を閉じる
+cursor.close()
+conn.commit()
+conn.close()
